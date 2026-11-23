@@ -464,14 +464,43 @@ function renderRound() {
       <div class="divider opacity-20"></div>
       <div id="playerScores" class="space-y-2">
         ${state.players.map((p,i) => `
-          <div class="flex items-center justify-between gap-2 rounded-2xl bg-black/10 px-3 py-2">
-            <span class="font-semibold truncate">${escapeHtml(p.name)}</span>
+          <div class="player-score-row player-color-${i + 1} flex items-center justify-between gap-2 rounded-2xl px-3 py-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="font-semibold truncate">${escapeHtml(p.name)}</span>
+              <button type="button" class="delete-player-btn btn btn-ghost btn-xs btn-circle shrink-0" data-index="${i}" aria-label="Remove ${escapeHtml(p.name)}" title="Remove player">
+                <i data-lucide="user-round-x" class="w-4 h-4"></i>
+              </button>
+            </div>
             <input class="input input-bordered bg-white/10 score-input"
               type="number" min="0" inputmode="numeric"
               data-index="${i}" value="${Number(state.scores[currentRound][i]) > 0 ? Number(state.scores[currentRound][i]) : ""}">
           </div>`).join("") || `<p class="text-sm text-white/40">Add at least one player.</p>`}
       </div>
     </div>`;
+  document.querySelectorAll(".delete-player-btn").forEach(button => {
+    button.addEventListener("click", async () => {
+      const i = Number(button.dataset.index);
+      const player = state.players[i];
+      if (!player) return;
+      const result = await Swal.fire({
+        icon: "warning",
+        title: `Remove ${escapeHtml(player.name)}?`,
+        text: "This player and all of their scores will be removed from the current session.",
+        showCancelButton: true,
+        confirmButtonText: "Remove player",
+        confirmButtonColor: "#dc2626",
+        cancelButtonText: "Keep player"
+      });
+      if (!result.isConfirmed) return;
+      state.players.splice(i, 1);
+      state.scores.forEach(round => round.splice(i, 1));
+      renderLeaderboard();
+      renderRound();
+      lucide.createIcons();
+      await save();
+    });
+  });
+
   document.querySelectorAll(".score-input").forEach(input => {
     input.addEventListener("input", e => {
       const i = Number(e.target.dataset.index);
