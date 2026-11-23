@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#111827">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Shanghai Session">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="512x512" href="favicon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <title>Shanghai Session</title>
+
+  <!-- Requested UI/design libraries -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@5/daisyui.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://unpkg.com/@popperjs/core@2"></script>
+  <script src="https://unpkg.com/tippy.js@6"></script>
+  <script src="https://unpkg.com/@rive-app/canvas@2.31.2"></script>
+
+  <style>
+    :root { color-scheme: light; }
+    body {
+      min-height: 100dvh;
+      background:
+        radial-gradient(circle at 8% 5%, rgba(251,191,36,.16), transparent 28%),
+        radial-gradient(circle at 92% 8%, rgba(99,102,241,.12), transparent 30%),
+        radial-gradient(circle at 50% 100%, rgba(20,184,166,.13), transparent 38%),
+        linear-gradient(145deg,#f8fafc 0%,#eef6f5 48%,#f5f3ff 100%);
+      font-family:"DM Sans",system-ui,sans-serif;
+      color:#172033;
+    }
+    body::before {
+      content:""; position:fixed; inset:0; pointer-events:none; opacity:.35;
+      background-image: radial-gradient(rgba(71,85,105,.10) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+    .glass {
+      background:rgba(255,255,255,.82);
+      border:1px solid rgba(148,163,184,.20);
+      box-shadow:0 18px 55px rgba(51,65,85,.10), inset 0 1px rgba(255,255,255,.95);
+      backdrop-filter:blur(18px);
+    }
+    .brand-card {
+      background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(240,253,250,.92));
+      border:1px solid rgba(148,163,184,.22);
+      box-shadow:0 16px 45px rgba(51,65,85,.12);
+    }
+    .logo-small { object-fit:cover; box-shadow:0 0 0 2px rgba(255,255,255,.9),0 10px 28px rgba(51,65,85,.18); }
+    .score-input { width:88px; text-align:center; font-size:1.1rem; font-weight:700; background:#fff; color:#172033; }
+    .round-card { transition:transform .2s ease, box-shadow .2s ease; }
+    .round-card:hover { transform:translateY(-2px); box-shadow:0 20px 55px rgba(51,65,85,.14); }
+    .suit-card { box-shadow:0 8px 22px rgba(51,65,85,.10); transform:rotate(-3deg); }
+    .suit-card:nth-child(2){transform:rotate(3deg)}
+    .suit-card:nth-child(3){transform:rotate(-2deg)}
+    .suit-card:nth-child(4){transform:rotate(4deg)}
+    .serif-title { font-family:"Playfair Display",Georgia,serif; }
+    #splash {
+      position:fixed; inset:0; z-index:100; overflow:hidden; display:flex; align-items:center; justify-content:center;
+      background:
+        radial-gradient(circle at 50% 35%,rgba(255,255,255,.98),transparent 32%),
+        radial-gradient(circle at 15% 90%,rgba(20,184,166,.18),transparent 35%),
+        radial-gradient(circle at 90% 15%,rgba(245,158,11,.18),transparent 35%),
+        linear-gradient(145deg,#f8fafc,#eef7f4 52%,#f4f1ff);
+    }
+    #splash::before,#splash::after{content:"";position:absolute;width:280px;height:280px;border-radius:50%;filter:blur(60px);opacity:.38;animation:splashGlow 6s ease-in-out infinite alternate}
+    #splash::before{background:#14b8a6;left:-90px;top:8%}
+    #splash::after{background:#f59e0b;right:-90px;bottom:5%;animation-delay:1.2s}
+    @keyframes splashGlow{from{transform:scale(.85);opacity:.22}to{transform:scale(1.18);opacity:.42}}
+    .splash-logo-wrap{animation:logoFloat 3.4s ease-in-out infinite;box-shadow:0 24px 70px rgba(51,65,85,.18),0 0 0 8px rgba(255,255,255,.75)}
+    @keyframes logoFloat{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-10px) rotate(1deg)}}
+    .balasador{font-family:"Playfair Display",Georgia,serif;font-weight:700;letter-spacing:.03em;color:#b45309;text-shadow:0 2px 18px rgba(245,158,11,.20)}
+    .splash-ring{box-shadow:0 0 0 1px rgba(255,255,255,.9),0 0 55px rgba(20,184,166,.22),inset 0 0 35px rgba(255,255,255,.4)}
+    .rank-1{border-color:#f59e0b}.rank-2{border-color:#94a3b8}.rank-3{border-color:#d97706}
+    .winner-popup{overflow:hidden!important;border:1px solid rgba(148,163,184,.25)!important;background:linear-gradient(145deg,#ffffff,#f5f8ff)!important;box-shadow:0 30px 100px rgba(51,65,85,.22)!important}
+    .winner-trophy{animation:trophyFloat 2.2s ease-in-out infinite;filter:drop-shadow(0 12px 20px rgba(245,158,11,.3))}
+    @keyframes trophyFloat{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-9px) rotate(2deg)}}
+    .winner-name-float{animation:winnerFloat 2.5s ease-in-out infinite}
+    @keyframes winnerFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    .firework{position:absolute;width:5px;height:5px;border-radius:50%;background:#fff;box-shadow:0 0 14px 3px #f59e0b;animation:firework 1.8s ease-out infinite;opacity:0}
+    @keyframes firework{0%{transform:scale(.1);opacity:0}18%{opacity:1}65%{transform:scale(1);opacity:1}100%{transform:scale(18);opacity:0}}
+    .firework.one{left:14%;top:20%;animation-delay:.1s}.firework.two{right:16%;top:24%;animation-delay:.55s}.firework.three{left:25%;bottom:18%;animation-delay:1s}.firework.four{right:24%;bottom:16%;animation-delay:1.35s}
+    .score-round-card{background:linear-gradient(135deg,#fff,#f8fafc);border:1px solid #e2e8f0}
+
+    .theme-dark { color-scheme: dark; background:linear-gradient(145deg,#0b1220 0%,#111827 48%,#1e1b4b 100%); color:#f8fafc; }
+    .theme-dark::before { opacity:.22; background-image:radial-gradient(rgba(255,255,255,.12) 1px,transparent 1px); }
+    .theme-dark .glass { background:rgba(15,23,42,.78); border-color:rgba(148,163,184,.18); box-shadow:0 18px 55px rgba(0,0,0,.30),inset 0 1px rgba(255,255,255,.06); }
+    .theme-dark .brand-card { background:linear-gradient(135deg,rgba(17,24,39,.94),rgba(30,41,59,.92)); border-color:rgba(148,163,184,.18); box-shadow:0 16px 45px rgba(0,0,0,.28); }
+    .theme-dark .brand-card h1,.theme-dark .font-black,.theme-dark .font-bold,.theme-dark .font-semibold { color:#f8fafc; }
+    .theme-dark .text-slate-500,.theme-dark .text-slate-400 { color:#94a3b8 !important; }
+    .theme-dark .input { background:rgba(30,41,59,.86); color:#f8fafc; border-color:rgba(148,163,184,.25); }
+    .theme-dark .input::placeholder { color:#94a3b8; }
+    .theme-dark .round-card:hover { box-shadow:0 20px 55px rgba(0,0,0,.35); }
+    .theme-dark .suit-card { background:#f8fafc; }
+    .theme-dark #splash { background:radial-gradient(circle at 50% 35%,rgba(30,41,59,.96),transparent 32%),radial-gradient(circle at 15% 90%,rgba(20,184,166,.16),transparent 35%),radial-gradient(circle at 90% 15%,rgba(245,158,11,.15),transparent 35%),linear-gradient(145deg,#0b1220,#111827 52%,#1e1b4b); }
+    .theme-dark .balasador { color:#fbbf24; }
+    .theme-dark .score-round-card,.theme-dark .history-round { background:linear-gradient(135deg,#172033,#111827); border-color:rgba(148,163,184,.18); }
+    .theme-dark .score-round-card .bg-slate-50 { background:rgba(30,41,59,.85); }
+    .theme-dark .score-round-card .text-slate-800,.theme-dark .history-round .text-slate-800 { color:#f8fafc !important; }
+    .theme-dark #roundScoresModal .modal-box,.theme-dark #historyModal .modal-box { background:#0f172a; color:#e2e8f0; }
+    .theme-dark .winner-popup { background:linear-gradient(145deg,#111827,#1e293b)!important; color:#f8fafc!important; border-color:rgba(148,163,184,.20)!important; }
+    .theme-dark .history-item { background:rgba(30,41,59,.75); border:1px solid rgba(148,163,184,.16); }
+    .theme-dark .history-item:hover { background:rgba(51,65,85,.82); }
+    .theme-light { color-scheme: light; }
+    .theme-toggle-label { font-size:.7rem; font-weight:700; }
+
+    /* Targeted theme text-visibility fixes: keep all existing layouts and components unchanged. */
+    .theme-light { color:#172033; }
+    .theme-light [class~="text-white"] { color:#172033 !important; }
+    .theme-light [class~="text-white/40"],
+    .theme-light [class~="text-white/45"],
+    .theme-light [class~="text-white/50"],
+    .theme-light [class~="text-white/55"],
+    .theme-light [class~="text-white/60"],
+    .theme-light [class~="text-white/80"] { color:#475569 !important; }
+    .theme-light [class~="text-slate-400"],
+    .theme-light [class~="text-slate-400/80"],
+    .theme-light [class~="text-slate-500"] { color:#475569 !important; }
+    .theme-light [class~="text-slate-700"],
+    .theme-light [class~="text-slate-800"] { color:#172033 !important; }
+    .theme-light #settingsMenu { color:#172033; background:#ffffff; }
+    .theme-dark #settingsMenu { color:#f8fafc; background:#0f172a; }
+    #chartModal .modal-box { color:#f8fafc; }
+
+    /* Targeted colorful theme cards/backgrounds only. */
+    .theme-light body, body.theme-light {
+      background:
+        radial-gradient(circle at 8% 5%, rgba(244,63,94,.18), transparent 28%),
+        radial-gradient(circle at 92% 8%, rgba(236,72,153,.16), transparent 30%),
+        radial-gradient(circle at 50% 100%, rgba(217,70,239,.14), transparent 38%),
+        linear-gradient(145deg,#fff1f2 0%,#fce7f3 48%,#f5d0fe 100%);
+      color:#172033;
+    }
+    .theme-light .glass { color:#172033; }
+    .theme-light main > section.glass:nth-of-type(1) { background:linear-gradient(135deg,rgba(255,255,255,.92),rgba(254,226,226,.92)); }
+    .theme-light main > section.glass:nth-of-type(2) { background:linear-gradient(135deg,rgba(255,255,255,.92),rgba(251,207,232,.92)); }
+    .theme-light .round-card { background:linear-gradient(135deg,rgba(255,255,255,.94),rgba(224,231,255,.92)); border-color:rgba(99,102,241,.20); }
+    .theme-light #leaderboard > div:nth-child(1) { background:linear-gradient(135deg,#fef3c7,#fde68a); border-color:rgba(245,158,11,.25); color:#172033; }
+    .theme-light #leaderboard > div:nth-child(2) { background:linear-gradient(135deg,#e0f2fe,#bae6fd); border-color:rgba(14,165,233,.25); color:#172033; }
+    .theme-light #leaderboard > div:nth-child(3) { background:linear-gradient(135deg,#dcfce7,#bbf7d0); border-color:rgba(34,197,94,.25); color:#172033; }
+    .theme-light #leaderboard > div:nth-child(n+4) { background:linear-gradient(135deg,#f3e8ff,#e9d5ff); border-color:rgba(168,85,247,.22); color:#172033; }
+    .theme-light #playerScores > div:nth-child(1) { background:linear-gradient(135deg,#fee2e2,#fecaca); color:#172033; }
+    .theme-light #playerScores > div:nth-child(2) { background:linear-gradient(135deg,#dbeafe,#bfdbfe); color:#172033; }
+    .theme-light #playerScores > div:nth-child(3) { background:linear-gradient(135deg,#dcfce7,#bbf7d0); color:#172033; }
+    .theme-light #playerScores > div:nth-child(n+4) { background:linear-gradient(135deg,#fef3c7,#fde68a); color:#172033; }
+    .theme-dark main > section.glass:nth-of-type(1) { background:linear-gradient(135deg,rgba(30,41,59,.94),rgba(49,46,129,.78)); }
+    .theme-dark main > section.glass:nth-of-type(2) { background:linear-gradient(135deg,rgba(17,24,39,.94),rgba(88,28,135,.72)); }
+    .theme-dark .round-card { background:linear-gradient(135deg,rgba(30,41,59,.94),rgba(14,116,144,.62)); border-color:rgba(56,189,248,.22); color:#f8fafc; }
+    .theme-dark #leaderboard > div:nth-child(1) { background:linear-gradient(135deg,rgba(120,53,15,.82),rgba(180,83,9,.62)); border-color:rgba(251,191,36,.28); color:#fff; }
+    .theme-dark #leaderboard > div:nth-child(2) { background:linear-gradient(135deg,rgba(30,64,175,.72),rgba(29,78,216,.55)); border-color:rgba(96,165,250,.28); color:#fff; }
+    .theme-dark #leaderboard > div:nth-child(3) { background:linear-gradient(135deg,rgba(6,78,59,.78),rgba(5,150,105,.52)); border-color:rgba(52,211,153,.28); color:#fff; }
+    .theme-dark #leaderboard > div:nth-child(n+4) { background:linear-gradient(135deg,rgba(76,29,149,.72),rgba(126,34,206,.52)); border-color:rgba(192,132,252,.28); color:#fff; }
+    .theme-dark #playerScores > div:nth-child(1) { background:linear-gradient(135deg,rgba(127,29,29,.72),rgba(190,24,93,.48)); color:#fff; }
+    .theme-dark #playerScores > div:nth-child(2) { background:linear-gradient(135deg,rgba(30,58,138,.72),rgba(8,145,178,.48)); color:#fff; }
+    .theme-dark #playerScores > div:nth-child(3) { background:linear-gradient(135deg,rgba(6,78,59,.72),rgba(22,163,74,.48)); color:#fff; }
+    .theme-dark #playerScores > div:nth-child(n+4) { background:linear-gradient(135deg,rgba(88,28,135,.72),rgba(168,85,247,.42)); color:#fff; }
+    .theme-dark .score-input { background:rgba(15,23,42,.78); color:#f8fafc; }
+    .card-game-label { font-size:.9rem; font-weight:800; letter-spacing:.25em; }
+    .theme-dark .card-game-label { color:#f8fafc !important; }
+    .theme-light .card-game-label { color:#172033 !important; }
+    #sessionDate { text-align:center; font-weight:600; }
+
+    html.skip-splash #splash { display:none !important; }
+  </style>
+</head>
+<body class="theme-dark">
+  <script>
+    if(sessionStorage.getItem("shanghai-splash-seen")==="1") document.documentElement.classList.add("skip-splash");
+  </script>
+
+  <script>
+    // Safety fallback: the splash must never block the app if an external library fails.
+    window.setTimeout(function () {
+      var splash = document.getElementById("splash");
+      if (splash) {
+        splash.style.opacity = "0";
+        splash.style.pointerEvents = "none";
+        splash.style.transition = "opacity .5s ease";
+        window.setTimeout(function(){ if (splash.parentNode) splash.parentNode.removeChild(splash); }, 250);
+      }
+    }, 1200);
+  </script>
+
+  <div id="splash">
+    <div class="relative z-10 text-center px-6 w-full max-w-sm">
+      <div class="splash-logo-wrap mx-auto w-52 h-52 sm:w-60 sm:h-60 rounded-[2.5rem] overflow-hidden splash-ring">
+        <img src="shanghai-logo.png" alt="Shanghai Session logo" class="w-full h-full object-cover">
+      </div>
+      <div class="mt-5">
+        <div class="balasador text-4xl sm:text-5xl">Balasador Yarn?!</div>
+        <div class="mt-1 text-sm tracking-[.32em] uppercase text-slate-500">Shanghai Session</div>
+      </div>
+      <div class="flex justify-center gap-2 mt-5 text-2xl">
+        <span class="suit-card bg-white rounded-xl px-3 py-1 text-rose-500">♥</span>
+        <span class="suit-card bg-white rounded-xl px-3 py-1 text-slate-800">♠</span>
+        <span class="suit-card bg-white rounded-xl px-3 py-1 text-rose-500">♦</span>
+        <span class="suit-card bg-white rounded-xl px-3 py-1 text-slate-800">♣</span>
+      </div>
+      <progress class="progress progress-success w-52 mt-7"></progress>
+    </div>
+  </div>
+
+  <main class="max-w-md mx-auto px-4 pb-8 pt-5 relative">
+    <header class="brand-card rounded-3xl p-3 flex items-center justify-between mb-5">
+      <div class="flex items-center gap-3 min-w-0">
+        <img src="shanghai-logo.png" alt="Shanghai Session" class="logo-small w-14 h-14 rounded-2xl shrink-0">
+        <div class="min-w-0">
+          <p class="card-game-label uppercase">Card Game</p>
+          <h1 class="text-2xl font-black truncate">Shanghai Session</h1>
+        </div>
+      </div>
+      <div class="flex items-center gap-1">
+        <button id="refreshBtn" class="btn btn-sm btn-ghost btn-circle" data-tippy-content="Refresh" aria-label="Refresh app">
+          <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+        </button>
+        <div class="relative">
+        <button id="settingsBtn" class="btn btn-sm btn-ghost btn-circle" data-tippy-content="Settings" aria-label="Settings">
+          <i data-lucide="settings" class="w-5 h-5"></i>
+        </button>
+        <div id="settingsMenu" class="hidden absolute right-0 top-full mt-2 z-50 w-56 rounded-2xl border border-slate-200/20 bg-white dark:bg-slate-900 shadow-2xl p-2">
+          <button id="themeToggle" class="w-full flex items-center gap-3 rounded-xl px-3 py-3 text-left hover:bg-slate-100 dark:hover:bg-white/10">
+            <i id="themeIcon" data-lucide="sun" class="w-5 h-5"></i>
+            <span id="themeLabel" class="theme-toggle-label">Light</span>
+          </button>
+          <button id="roundScoresBtn" class="w-full flex items-center gap-3 rounded-xl px-3 py-3 text-left hover:bg-slate-100 dark:hover:bg-white/10">
+            <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+            <span>Check all rounds</span>
+          </button>
+          <button id="historyBtn" class="w-full flex items-center gap-3 rounded-xl px-3 py-3 text-left hover:bg-slate-100 dark:hover:bg-white/10">
+            <i data-lucide="history" class="w-5 h-5"></i>
+            <span>Previous Sessions</span>
+          </button>
+          <div class="my-1 border-t border-slate-200/30"></div>
+          <div class="rounded-xl px-3 py-3">
+            <div class="flex items-center gap-2 min-w-0">
+              <i data-lucide="cloud" class="w-4 h-4 shrink-0"></i>
+              <span id="cloudStatus" class="text-xs opacity-60 truncate">Connecting to Firestore...</span>
+            </div>
+            <button id="saveLocalBtn" class="btn btn-sm btn-outline w-full mt-2">
+              <i data-lucide="cloud" class="w-4 h-4"></i> Save to Firestore
+            </button>
+          </div>
+          <button id="resetBtn" class="w-full flex items-center gap-3 rounded-xl px-3 py-3 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30">
+            <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
+            <span>Reset Session</span>
+          </button>
+        </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="glass rounded-3xl p-4 mb-4">
+      <div class="flex gap-2">
+        <input id="playerName" class="input input-bordered bg-white flex-1 text-center" placeholder="Player name">
+        <button id="addPlayer" class="btn btn-primary">
+          <i data-lucide="user-plus" class="w-4 h-4"></i> Add
+        </button>
+      </div>
+      <div class="flex gap-2 mt-3">
+        <input id="sessionDate" class="input input-bordered bg-white flex-1" placeholder="23-Nov-2026, Mon, 10:04 AM" readonly>
+        <button id="chartBtn" class="btn btn-square btn-ghost" data-tippy-content="Score chart">
+          <i data-lucide="chart-no-axes-combined"></i>
+        </button>
+      </div>
+    </section>
+
+    <section class="glass rounded-3xl p-4 mb-4">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <p class="text-xs text-slate-500">Leading</p>
+          <div id="winner" class="text-2xl font-black">Add players</div>
+        </div>
+        <div class="text-right">
+          <p class="text-xs text-slate-500">Round</p>
+          <div id="roundCounter" class="font-bold">1 / 7</div>
+        </div>
+      </div>
+      <div id="leaderboard" class="space-y-2"></div>
+    </section>
+
+    <section id="rounds"></section>
+
+    <div class="grid grid-cols-2 gap-3 mt-4">
+      <button id="prevBtn" class="btn btn-outline">
+        <i data-lucide="chevron-left"></i> Previous
+      </button>
+      <button id="nextBtn" class="btn btn-primary">
+        Next Round <i data-lucide="chevron-right"></i>
+      </button>
+    </div>
+
+    <button id="finishBtn" class="btn btn-success btn-block mt-3">
+      <i data-lucide="trophy"></i> Finish Session
+    </button>
+
+    <p class="text-center text-[10px] text-slate-400/80 mt-2">© 2026 Shanghai Session · Created by Teacher Jefry</p>
+  </main>
+
+  <dialog id="roundScoresModal" class="modal">
+    <div class="modal-box bg-white text-slate-700 max-w-md">
+      <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button></form>
+      <h3 class="serif-title text-2xl font-bold mb-1">Round Scores</h3>
+      <p class="text-sm text-slate-400 mb-4">Check every player's score for every round.</p>
+      <div id="roundScoresList" class="space-y-3 max-h-[65vh] overflow-y-auto pr-1"></div>
+    </div>
+  </dialog>
+
+
+  <dialog id="historyModal" class="modal">
+    <div class="modal-box max-w-md">
+      <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button></form>
+      <div id="historyListView">
+        <h3 class="serif-title text-2xl font-bold mb-1">Session History</h3>
+        <p class="text-sm opacity-60 mb-4">Previous sessions saved in Firestore and synchronized in real time.</p>
+        <div id="historyList" class="space-y-2 max-h-[65vh] overflow-y-auto pr-1"></div>
+      </div>
+      <div id="historyDetailView" class="hidden">
+        <button id="historyBackBtn" class="btn btn-sm btn-ghost mb-2"><i data-lucide="arrow-left" class="w-4 h-4"></i> Back</button>
+        <h3 class="serif-title text-2xl font-bold mb-3">Session Details</h3>
+        <div id="historyDetail" class="max-h-[65vh] overflow-y-auto pr-1"></div>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="chartModal" class="modal">
+    <div class="modal-box bg-slate-900 max-w-2xl">
+      <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button></form>
+      <h3 class="font-bold text-lg mb-1">Current Session Scores</h3>
+      <p class="text-sm text-white/60 mb-4">Scores for every player across all seven rounds.</p>
+      <div id="scoreChartTable" class="max-h-[65vh] overflow-auto"></div>
+    </div>
+  </dialog>
+
+  <script src="app.js?v=20261123-firestore-2"></script>
+</body>
+</html>
